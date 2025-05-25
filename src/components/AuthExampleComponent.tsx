@@ -86,9 +86,10 @@ const AuthExampleComponent = () => {
       setStatusType('info');
       
       // Example: Try to get user profile (this will fail until you have a backend)
-      const response = await api.getUserProfile();
-      setStatus(`API call successful: ${JSON.stringify(response, null, 2)}`);
-      setStatusType('success');
+      // const response = await api.getUserProfile();
+      // setStatus(`API call successful: ${JSON.stringify(response, null, 2)}`);
+      // setStatusType('success');
+      throw new Error('getUserProfile is not implemented in the API.');
     } catch (error) {
       setStatus(`API call failed (expected if no backend): ${error}`);
       setStatusType('error');
@@ -129,7 +130,16 @@ const AuthExampleComponent = () => {
         skills: ['React', 'TypeScript', 'Node.js', 'MongoDB']
       };
       
-      const response = await api.saveResume(exampleResume);
+      // Use a default theme for testing
+      const exampleTheme = {
+        primaryColor: '#1976D2',
+        secondaryColor: '#FFC107',
+        textColor: '#222',
+        backgroundColor: '#fff',
+        headingFont: 'Arial',
+        bodyFont: 'Arial'
+      };
+      const response = await api.saveResume({ resumeData: exampleResume, theme: exampleTheme });
       setStatus(`Resume saved: ${JSON.stringify(response, null, 2)}`);
       setStatusType('success');
     } catch (error) {

@@ -7,8 +7,7 @@ import {
   faPhone, 
   faMapMarkerAlt, 
   faGlobe, 
-  faFileDownload,
-  faPlus 
+  faFileDownload
 } from '@fortawesome/free-solid-svg-icons';
 import generatePDF from 'react-to-pdf';
 
@@ -151,28 +150,6 @@ const Description = styled.p`
   font-family: ${props => props.theme.bodyFont};
 `;
 
-const EducationItem = styled.div`
-  margin-bottom: 15px;
-  
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const SchoolName = styled.h3`
-  margin: 0;
-  font-size: 1.2rem;
-  color: ${props => props.theme.textColor};
-  font-family: ${props => props.theme.headingFont};
-`;
-
-const Degree = styled.div`
-  font-weight: bold;
-  color: ${props => props.theme.primaryColor};
-  margin-bottom: 5px;
-  font-family: ${props => props.theme.bodyFont};
-`;
-
 const SkillsContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -212,22 +189,6 @@ const Placeholder = styled.span`
   font-style: italic;
 `;
 
-const AddButton = styled.button`
-  background-color: #28a745;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  
-  &:hover {
-    background-color: #218838;
-  }
-`;
-
 const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, setResumeData }) => {
   const targetRef = useRef<HTMLDivElement>(null);
 
@@ -250,12 +211,6 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, setResumeData
       experience: prev.experience.map(exp => exp.id === id ? { ...exp, [field]: value } : exp),
     }));
   };
-  const handleEducationChange = (id: string, field: keyof ResumeData['education'][0], value: string) => {
-    setResumeData(prev => ({
-      ...prev,
-      education: prev.education.map(edu => edu.id === id ? { ...edu, [field]: value } : edu),
-    }));
-  };
   const handleSkillChange = (index: number, value: string) => {
     setResumeData(prev => {
       const newSkills = [...prev.skills];
@@ -272,30 +227,6 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, setResumeData
       return { ...prev, skills: newSkills };
     });
   };
-  const handleAddExperience = () => {
-    setResumeData(prev => ({
-      ...prev,
-      experience: [
-        ...prev.experience,
-        {
-          id: Date.now().toString(),
-          company: 'New Employer',
-          position: 'POSITION',
-          startDate: 'From',
-          endDate: 'Until',
-          description: 'Enter your work experience description'
-        }
-      ]
-    }));
-  };
-
-  const handleRemoveExperience = (id: string) => {
-    setResumeData(prev => ({
-      ...prev,
-      experience: prev.experience.filter(exp => exp.id !== id)
-    }));
-  };
-
   const handleDownloadPDF = () => {
     generatePDF(targetRef, {
       filename: `${resumeData.personalInfo.name.replace(/\s+/g, '-')}-Resume.pdf`,
@@ -495,53 +426,6 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, setResumeData
                     {exp.description ? exp.description : <Placeholder>Enter description</Placeholder>}
                   </Description>
                 </ExperienceItem>
-              ))}
-              <AddButton onClick={handleAddExperience} style={{ marginTop: 10 , color: 'white', backgroundColor: '#138be4', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                <FontAwesomeIcon icon={faPlus} /> Add Experience
-              </AddButton>
-            </Section>
-            <Section>
-              <SectionTitle>EDUCATION</SectionTitle>
-              {resumeData.education.map((edu) => (
-                <EducationItem key={edu.id}>
-                  <SchoolName
-                    contentEditable
-                    suppressContentEditableWarning
-                    spellCheck={false}
-                    onBlur={e => handleEducationChange(edu.id, 'school', e.currentTarget.textContent || '')}
-                  >
-                    {edu.school ? edu.school : <Placeholder>School/University</Placeholder>}
-                  </SchoolName>
-                  <Degree
-                    contentEditable
-                    suppressContentEditableWarning
-                    spellCheck={false}
-                    onBlur={e => handleEducationChange(edu.id, 'degree', e.currentTarget.textContent || '')}
-                  >
-                    {edu.degree ? edu.degree : <Placeholder>Degree</Placeholder>}
-                  </Degree>
-                  <DateRange>
-                    <span
-                      contentEditable
-                      suppressContentEditableWarning
-                      spellCheck={false}
-                      onBlur={e => handleEducationChange(edu.id, 'startDate', e.currentTarget.textContent || '')}
-                      style={{ minWidth: 30 }}
-                    >
-                      {edu.startDate ? edu.startDate : <Placeholder>From</Placeholder>}
-                    </span>
-                    {' - '}
-                    <span
-                      contentEditable
-                      suppressContentEditableWarning
-                      spellCheck={false}
-                      onBlur={e => handleEducationChange(edu.id, 'endDate', e.currentTarget.textContent || '')}
-                      style={{ minWidth: 30 }}
-                    >
-                      {edu.endDate ? edu.endDate : <Placeholder>Until</Placeholder>}
-                    </span>
-                  </DateRange>
-                </EducationItem>
               ))}
             </Section>
           </RightColumn>
