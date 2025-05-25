@@ -422,38 +422,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, setResumeData
             <Section>              <SectionTitle>EXPERIENCE</SectionTitle>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                 <div></div>
-                <button 
-                  onClick={() => {
-                    setResumeData(prev => ({
-                      ...prev,
-                      experience: [
-                        ...prev.experience,
-                        {
-                          id: Date.now().toString(),
-                          company: 'New Employer',
-                          position: 'POSITION',
-                          startDate: 'From',
-                          endDate: 'Until',
-                          description: 'Enter your work experience description'
-                        }
-                      ]
-                    }));
-                  }} 
-                  style={{ 
-                    background: '#1E88E5', 
-                    color: 'white', 
-                    border: 'none',
-                    borderRadius: '4px',
-                    padding: '5px 12px',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px'
-                  }}
-                >
-                  + Add Experience
-                </button>
+                
               </div>
               {resumeData.experience.map((exp) => (
                 <ExperienceItem key={exp.id}>
@@ -527,7 +496,7 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, setResumeData
                   </Description>
                 </ExperienceItem>
               ))}
-              <AddButton onClick={handleAddExperience} style={{ marginTop: 10 }}>
+              <AddButton onClick={handleAddExperience} style={{ marginTop: 10 , color: 'white', backgroundColor: '#138be4', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
                 <FontAwesomeIcon icon={faPlus} /> Add Experience
               </AddButton>
             </Section>
