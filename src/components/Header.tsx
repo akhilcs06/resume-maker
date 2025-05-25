@@ -1,5 +1,6 @@
-import { UserButton, SignInButton, useUser } from '@clerk/clerk-react';
-import styled from 'styled-components';
+import { UserButton, SignInButton, useUser, useClerk } from "@clerk/clerk-react";
+import styled from "styled-components";
+import SignOutButton from "./SignOutButton";
 
 const HeaderContainer = styled.header`
   display: flex;
@@ -13,7 +14,7 @@ const HeaderContainer = styled.header`
 
 const Logo = styled.h1`
   margin: 0;
-  color: #1E88E5;
+  color: #1e88e5;
   font-size: 1.5rem;
   font-weight: 600;
 `;
@@ -31,7 +32,7 @@ const WelcomeText = styled.span`
 
 const SignInWrapper = styled.div`
   .cl-internal-b3fm6y {
-    background-color: #1E88E5;
+    background-color: #1e88e5;
     color: white;
     border: none;
     padding: 0.5rem 1rem;
@@ -39,17 +40,44 @@ const SignInWrapper = styled.div`
     font-size: 0.9rem;
     cursor: pointer;
     transition: background-color 0.2s;
-    
+
     &:hover {
-      background-color: #1976D2;
+      background-color: #1976d2;
     }
   }
 `;
 
-const Header = () => {
-  const { isSignedIn, user } = useUser();
+const UserButtonWrapper = styled.div`
+  display: flex;
+  align-items: center;
 
-  console.log('Header Rendered:', { isSignedIn, user });
+  .cl-userButtonBox {
+    width: 32px;
+    height: 32px;
+  }
+
+  .cl-userButtonTrigger {
+    width: 32px;
+    height: 32px;
+  }
+`;
+
+const Header = () => {
+  const { isSignedIn, user, isLoaded } = useUser();
+  const { signOut } = useClerk();
+
+  console.log("Header Rendered:", { isSignedIn, user, isLoaded });
+
+  if (!isLoaded) {
+    return (
+      <HeaderContainer>
+        <Logo>Resume Maker</Logo>
+        <AuthSection>
+          <span>Loading...</span>
+        </AuthSection>
+      </HeaderContainer>
+    );
+  }
 
   return (
     <HeaderContainer>
@@ -57,14 +85,22 @@ const Header = () => {
       <AuthSection>
         {isSignedIn ? (
           <>
-            <WelcomeText>Welcome, {user.firstName}!</WelcomeText>
-            <UserButton 
-              appearance={{
-                elements: {
-                  avatarBox: "width: 32px; height: 32px;"
-                }
-              }}
-            />
+            <WelcomeText>Welcome, {user?.firstName || "User"}!</WelcomeText>
+            <UserButtonWrapper>
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "width: 32px; height: 32px;",
+                    userButtonBox: "width: 32px; height: 32px;",
+                    userButtonTrigger: "width: 32px; height: 32px;",
+                  },
+                }}
+              />
+              <SignOutButton onClick={() => signOut({ redirectUrl: "/" })}>
+                Sign Out
+              </SignOutButton>
+            </UserButtonWrapper>
           </>
         ) : (
           <SignInWrapper>
@@ -73,7 +109,6 @@ const Header = () => {
             </SignInButton>
           </SignInWrapper>
         )}
-        {!isSignedIn && <span>Sign-in state is false or user data is missing.</span>}
       </AuthSection>
     </HeaderContainer>
   );
