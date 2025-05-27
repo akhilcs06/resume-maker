@@ -22,6 +22,7 @@ export interface ResumeData {
     email: string;
     phone: string;
     website: string;
+    linkedin?: string;
   };
   summary: string;
   experience: Array<{
@@ -40,6 +41,8 @@ export interface ResumeData {
     endDate: string;
   }>;
   skills: string[];
+  languages?: string[];
+  hobbies?: string[];
 }
 
 export interface ThemeType {
@@ -54,6 +57,23 @@ export interface ThemeType {
 export interface ResumeContent {
   resumeData: ResumeData;
   theme: ThemeType;
+  sectionVisibility?: {
+    picture: boolean;
+    location: boolean;
+    phone: boolean;
+    email: boolean;
+    website: boolean;
+    role: boolean;
+    about: boolean;
+    work: boolean;
+    education: boolean;
+    skills: boolean;
+    languages: boolean;
+    hobbies: boolean;
+    linkedin: boolean;
+    custom1: boolean;
+    custom2: boolean;
+  };
 }
 
 const App = () => {

@@ -1,6 +1,6 @@
-import { UserButton, SignInButton, useUser, useClerk } from "@clerk/clerk-react";
+import { UserButton, SignInButton, useUser } from "@clerk/clerk-react";
 import styled from "styled-components";
-import SignOutButton from "./SignOutButton";
+// import SignOutButton from "./SignOutButton";
 
 const HeaderContainer = styled.header`
   display: flex;
@@ -64,7 +64,7 @@ const UserButtonWrapper = styled.div`
 
 const Header = () => {
   const { isSignedIn, user, isLoaded } = useUser();
-  const { signOut } = useClerk();
+  // const { signOut } = useClerk();
 
   console.log("Header Rendered:", { isSignedIn, user, isLoaded });
 
@@ -97,9 +97,6 @@ const Header = () => {
                   },
                 }}
               />
-              <SignOutButton onClick={() => signOut({ redirectUrl: "/" })}>
-                Sign Out
-              </SignOutButton>
             </UserButtonWrapper>
           </>
         ) : (

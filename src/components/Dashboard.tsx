@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { ThemeProvider } from 'styled-components';
 import ResumePreview from './ResumePreview';
 import ThemeControls from './ThemeControls';
@@ -7,11 +7,10 @@ import useUserData from '../hooks/useUserData';
 import useSupabaseUserSync from '../hooks/useSupabaseUserSync';
 import { useApi } from '../services/api';
 
-// Define the default theme
 const defaultTheme = {
-  primaryColor: '#1E88E5', // Blue
-  secondaryColor: '#ffffff', // White
-  textColor: '#333333', // Dark gray
+  primaryColor: '#1E88E5',
+  secondaryColor: '#ffffff',
+  textColor: '#333333',
   backgroundColor: '#f5f5f5',
   headingFont: '"Roboto", sans-serif',
   bodyFont: '"Open Sans", sans-serif',
@@ -20,20 +19,30 @@ const defaultTheme = {
 const DashboardContainer = styled.div`
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 80px); // Account for header height
+  min-height: calc(100vh - 80px);
   padding: 20px;
+  gap: 20px;
   
   @media (min-width: 1024px) {
     flex-direction: row;
+  }
+  
+  @media (max-width: 768px) {
+    padding: 10px;
   }
 `;
 
 const PreviewSection = styled.div`
   flex: 2;
   position: relative;
+  margin-top: 60px;
+  
+  @media (min-width: 1024px) {
+    margin-top: 0;
+  }
 `;
 
-const SaveStatus = styled.div<{ status: string }>`
+const SaveStatus = styled.div<{ status: 'idle' | 'saving' | 'saved' | 'error' }>`
   padding: 0.5rem;
   border-radius: 4px;
   font-size: 0.8rem;
@@ -63,93 +72,120 @@ const SaveStatus = styled.div<{ status: string }>`
     }
   }};
   display: ${props => props.status === 'idle' ? 'none' : 'block'};
+  text-align: center;
+  margin: 10px auto;
+  max-width: 200px;
 `;
 
-const Dashboard = () => {
+type SectionVisibilityState = {
+  picture: boolean;
+  location: boolean;
+  phone: boolean;
+  email: boolean;
+  website: boolean;
+  role: boolean;
+  about: boolean;
+  work: boolean;
+  education: boolean;
+  skills: boolean;
+  languages: boolean;
+  hobbies: boolean;
+  linkedin: boolean;
+  custom1: boolean;
+  custom2: boolean;
+};
+
+const Dashboard: React.FC = () => {
   const { email, fullName } = useUserData();
   const { synced } = useSupabaseUserSync();
   const api = useApi();
-  const { convertResumeFromDb } = api;
 
-  // Default resume data
-  const defaultResumeData: ResumeData = {
+  const [resumeData, setResumeData] = useState<ResumeData>({
     personalInfo: {
       name: fullName || 'Your Name',
       role: 'YOUR ROLE',
       profileImage: '',
-      location: 'Enter Location',
+      location: 'Location',
       email: email || 'Enter your email',
       phone: 'Enter your phone',
       website: 'Enter URL',
+      linkedin: 'LinkedIn URL',
     },
     summary: 'Enter your professional summary',
-    experience: [
-      {
-        id: '1',
-        company: 'Employer',
-        position: 'POSITION',
-        startDate: 'From',
-        endDate: 'Until',
-        description: 'Enter your work experience description',
-      },
-    ],
-    education: [
-      {
-        id: '1',
-        school: 'School',
-        degree: 'DEGREE',
-        startDate: 'From',
-        endDate: 'Until',
-      },
-    ],
+    experience: [{
+      id: '1',
+      company: 'Company',
+      position: 'Position',
+      startDate: 'Start',
+      endDate: 'End',
+      description: 'Enter your work experience description',
+    }],
+    education: [{
+      id: '1',
+      school: 'School',
+      degree: 'DEGREE',
+      startDate: 'From',
+      endDate: 'Until',
+    }],
     skills: ['Enter skill'],
-  };
+    languages: ['Language'],
+    hobbies: ['Hobby'],
+  });
 
-  // State for resume data
-  const [resumeData, setResumeData] = useState<ResumeData>(defaultResumeData);
-  // State for theme
   const [theme, setTheme] = useState(defaultTheme);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const lastSavedData = useRef(JSON.stringify(resumeData));
+  
+  const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityState>({
+    picture: true,
+    location: true,
+    phone: true,
+    email: true,
+    website: true,
+    role: true,
+    about: true,
+    work: true,
+    education: true,
+    skills: true,
+    languages: true,
+    hobbies: true,
+    linkedin: true,
+    custom1: false,
+    custom2: false,
+  });
 
-  // Load resume and theme from Supabase on mount (after user is synced)
+  // Load resume and theme from Supabase on mount
   useEffect(() => {
     const loadResume = async () => {
       if (!synced) return;
       try {
         const response = await api.getResumes();
         if (response.success && response.data && response.data.length > 0 && response.data[0].content) {
-          const loaded = convertResumeFromDb(response.data[0]);
+          const loaded = response.data[0].content;
           if ('resumeData' in loaded && 'theme' in loaded) {
             setResumeData(loaded.resumeData);
             setTheme(loaded.theme);
           } else {
             setResumeData(loaded as ResumeData);
-            setTheme(defaultTheme);
           }
         }
       } catch (err) {
-        // Optionally handle error
         console.error('Failed to load resume:', err);
       }
     };
     loadResume();
-    // Only run once after sync
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [synced]);
+  }, [synced, api]);
 
-  // Auto-save functionality (save both resumeData and theme)
+  // Auto-save resume and theme
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
+    
     const autoSave = async () => {
       if (!synced) return;
-      const content = { resumeData, theme };
-      if (JSON.stringify(content) === lastSavedData.current) return; // Only save if data changed
       setSaveStatus('saving');
       try {
+        const content = { resumeData, theme };
         await api.saveResume(content, `Resume - ${new Date().toLocaleDateString()}`);
         setSaveStatus('saved');
-        lastSavedData.current = JSON.stringify(content);
         timeoutId = setTimeout(() => setSaveStatus('idle'), 2000);
       } catch (error) {
         console.error('Auto-save failed:', error);
@@ -157,26 +193,30 @@ const Dashboard = () => {
         timeoutId = setTimeout(() => setSaveStatus('idle'), 2000);
       }
     };
+
     timeoutId = setTimeout(autoSave, 2000);
     return () => clearTimeout(timeoutId);
   }, [resumeData, theme, api, synced]);
 
-  // Update theme handler
-  const handleUpdateTheme = (newTheme: Partial<typeof theme>) => {
-    setTheme((prev) => ({ ...prev, ...newTheme }));
-  };
-
   return (
     <ThemeProvider theme={theme}>
-      <DashboardContainer>
+      <DashboardContainer>      <SaveStatus status={saveStatus}>
+          {saveStatus === 'saving' && 'Saving...'}
+          {saveStatus === 'saved' && 'All changes saved'}
+          {saveStatus === 'error' && 'Error saving changes'}
+        </SaveStatus>
+        <ThemeControls
+          theme={theme}
+          updateTheme={newTheme => setTheme(prev => ({ ...prev, ...newTheme }))}
+          sectionVisibility={sectionVisibility}
+          setSectionVisibility={setSectionVisibility}
+        />
         <PreviewSection>
-          <ResumePreview resumeData={resumeData} setResumeData={setResumeData} />
-          <ThemeControls theme={theme} updateTheme={handleUpdateTheme} />
-          <SaveStatus status={saveStatus}>
-            {saveStatus === 'saving' && '💾 Saving...'}
-            {saveStatus === 'saved' && '✅ Resume saved successfully'}
-            {saveStatus === 'error' && '❌ Failed to save resume'}
-          </SaveStatus>
+          <ResumePreview
+            resumeData={resumeData}
+            setResumeData={setResumeData}
+            sectionVisibility={sectionVisibility}
+          />
         </PreviewSection>
       </DashboardContainer>
     </ThemeProvider>
