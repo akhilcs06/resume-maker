@@ -22,11 +22,11 @@ const DashboardContainer = styled.div`
   min-height: calc(100vh - 80px);
   padding: 20px;
   gap: 20px;
-  
+
   @media (min-width: 1024px) {
     flex-direction: row;
   }
-  
+
   @media (max-width: 768px) {
     padding: 10px;
   }
@@ -36,7 +36,7 @@ const PreviewSection = styled.div`
   flex: 2;
   position: relative;
   margin-top: 60px;
-  
+
   @media (min-width: 1024px) {
     margin-top: 0;
   }
@@ -95,10 +95,9 @@ type SectionVisibilityState = {
   custom2: boolean;
 };
 
-const Dashboard: React.FC = () => {
-  const { email, fullName } = useUserData();
+const Dashboard: React.FC = () => {  const { email, fullName } = useUserData();
   const { synced } = useSupabaseUserSync();
-  const api = useApi();
+  const api = useApi(); // Now returns a memoized object
 
   const [resumeData, setResumeData] = useState<ResumeData>({
     personalInfo: {
@@ -134,7 +133,7 @@ const Dashboard: React.FC = () => {
 
   const [theme, setTheme] = useState(defaultTheme);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  
+
   const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityState>({
     picture: true,
     location: true,
@@ -178,7 +177,7 @@ const Dashboard: React.FC = () => {
   // Auto-save resume and theme
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    
+
     const autoSave = async () => {
       if (!synced) return;
       setSaveStatus('saving');
@@ -200,7 +199,8 @@ const Dashboard: React.FC = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <DashboardContainer>      <SaveStatus status={saveStatus}>
+      <DashboardContainer>
+        <SaveStatus status={saveStatus}>
           {saveStatus === 'saving' && 'Saving...'}
           {saveStatus === 'saved' && 'All changes saved'}
           {saveStatus === 'error' && 'Error saving changes'}

@@ -10,9 +10,9 @@ import { useApi } from '../services/api';
 
 // Define the default theme
 const defaultTheme: ThemeType = {
-  primaryColor: '#1E88E5', // Blue
-  secondaryColor: '#ffffff', // White
-  textColor: '#333333', // Dark gray
+  primaryColor: '#1E88E5',
+  secondaryColor: '#ffffff',
+  textColor: '#333333',
   backgroundColor: '#f5f5f5',
   headingFont: '"Roboto", sans-serif',
   bodyFont: '"Open Sans", sans-serif',
@@ -29,14 +29,14 @@ const ContentContainer = styled.div`
   display: flex;
   flex-direction: column;
   padding: 20px;
-  padding-top: 96px; // Height of the fixed toolbar + some spacing
+  padding-top: 96px;
 `;
 
 const DashboardContainer = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-  
+
   @media (min-width: 1024px) {
     flex-direction: row;
   }
@@ -79,12 +79,9 @@ const SaveStatus = styled.div<{ status: string }>`
   display: ${props => props.status === 'idle' ? 'none' : 'block'};
 `;
 
-const SafeDashboard = () => {
-  const { email, fullName } = useUserData();
+const SafeDashboard = () => {  const { email, fullName } = useUserData();
   const { synced } = useSupabaseUserSync();
   const api = useApi();
-
-  // State
   const [resumeData, setResumeData] = useState<ResumeData>({
     personalInfo: {
       name: fullName || 'Your Name',
@@ -117,10 +114,28 @@ const SafeDashboard = () => {
     ],
     skills: ['Enter skill'],
   });
+
+  const [sectionVisibility, setSectionVisibility] = useState({
+    picture: true,
+    location: true,
+    phone: true,
+    email: true,
+    website: true,
+    role: true,
+    about: true,
+    work: true,
+    education: true,
+    skills: true,
+    languages: true,
+    hobbies: true,
+    linkedin: true,
+    custom1: false,
+    custom2: false,
+  });
+
   const [theme, setTheme] = useState(defaultTheme);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  // Load resume and theme from Supabase on mount (after user is synced)
   useEffect(() => {
     const loadResume = async () => {
       if (!synced) return;
@@ -141,10 +156,8 @@ const SafeDashboard = () => {
       }
     };
     loadResume();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [synced]);
+  }, [synced, api]);
 
-  // Auto-save resume and theme
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     const autoSave = async () => {
@@ -169,20 +182,25 @@ const SafeDashboard = () => {
     <>
       <Header />
       <ThemeProvider theme={theme}>
-        <PageContainer style={{marginTop: 0}}>
+        <PageContainer style={{ marginTop: 0 }}>
           <ContentContainer>
             <SaveStatus status={saveStatus}>
               {saveStatus === 'saving' && 'Saving...'}
               {saveStatus === 'saved' && 'All changes saved.'}
               {saveStatus === 'error' && 'Error saving changes.'}
             </SaveStatus>
-            <DashboardContainer>
-              <PreviewSection>
-                <ResumePreview resumeData={resumeData} setResumeData={setResumeData} />
+            <DashboardContainer>              <PreviewSection>
+                <ResumePreview 
+                  resumeData={resumeData} 
+                  setResumeData={setResumeData} 
+                  sectionVisibility={sectionVisibility}
+                />
               </PreviewSection>
               <ThemeControls
                 theme={theme}
                 updateTheme={newTheme => setTheme(prev => ({ ...prev, ...newTheme }))}
+                sectionVisibility={sectionVisibility}
+                setSectionVisibility={setSectionVisibility}
               />
             </DashboardContainer>
           </ContentContainer>

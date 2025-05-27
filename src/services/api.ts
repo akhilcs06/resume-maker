@@ -1,4 +1,5 @@
 import { useSupabase } from '../hooks/useSupabase';
+import { useMemo } from 'react';
 import type { ResumeData, ResumeContent } from '../App';
 import type { Resume, ResumeTemplate, UserProfile } from '../lib/supabase';
 
@@ -35,7 +36,8 @@ export const useApi = () => {
         }
     };
 
-    return {
+    // Use useMemo to ensure stable object reference across renders
+    return useMemo(() => ({
         // Resume operations
         saveResume: async (resumeContent: ResumeContent, title: string = 'Untitled Resume'): Promise<ApiResponse<Resume>> => {
             return wrapSupabaseCall(() => supabase.saveResume(resumeContent, title));
@@ -71,12 +73,8 @@ export const useApi = () => {
         // Returns ResumeContent, not just ResumeData
         convertResumeFromDb: (dbResume: Resume): ResumeContent => {
             return supabase.convertFromDbFormat(dbResume);
-        },
-
-        convertResumeToDb: (resumeContent: ResumeContent, title: string) => {
+        }, convertResumeToDb: (resumeContent: ResumeContent, title: string) => {
             return supabase.convertToDbFormat(resumeContent, title);
         }
-    };
+    }), [supabase]); // Only re-create if supabase instance changes
 };
-
-export default useApi;
