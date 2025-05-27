@@ -48,9 +48,9 @@ const SidebarContainer = styled.div<SidebarContainerProps>`
   background: #fff;
   box-shadow: 2px 0 12px rgba(30,136,229,0.07);
   min-width: 80px;
-  height: 100vh;
+  top: 64px;
+  height: calc(100vh - 64px);
   position: fixed;
-  top: 0;
   left: 0;
   z-index: 1000;
   border-radius: 0 16px 16px 0;
@@ -137,6 +137,53 @@ const SectionToggleContainer = styled.div`
   width: 100%;
 `;
 
+const ToggleSwitch = styled.label`
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  margin-left: 12px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  span {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #e0e0e0;
+    transition: 0.3s;
+    border-radius: 24px;
+  }
+
+  span:before {
+    position: absolute;
+    content: '';
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(30,136,229,0.08);
+  }
+
+  input:checked + span {
+    background-color: #1E88E5;
+  }
+
+  input:checked + span:before {
+    transform: translateX(20px);
+  }
+`;
+
 const ThemeControls: React.FC<ThemeControlsProps> = ({
   theme,
   updateTheme,
@@ -213,12 +260,14 @@ const ThemeControls: React.FC<ThemeControlsProps> = ({
             <div key={key} style={{ marginBottom: 10 }}>
               <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ textTransform: 'capitalize' }}>{key}</span>
-                <input
-                  type="checkbox"
-                  checked={value}
-                  onChange={() => handleToggleSection(key as keyof SectionVisibilityState)}
-                  style={{ width: 20, height: 20 }}
-                />
+                <ToggleSwitch>
+                  <input
+                    type="checkbox"
+                    checked={value}
+                    onChange={() => handleToggleSection(key as keyof SectionVisibilityState)}
+                  />
+                  <span />
+                </ToggleSwitch>
               </label>
             </div>
           ))}
