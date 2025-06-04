@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { ChromePicker } from 'react-color';
 import type { ColorResult } from 'react-color';
 import styled from 'styled-components';
+import useDebouncedCallback from '../hooks/useDebouncedCallback';
 
 type SectionVisibilityState = {
   picture: boolean;
@@ -216,8 +217,10 @@ const ThemeControls: React.FC<ThemeControlsProps> = ({
     setSectionVisibility(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const debouncedUpdateTheme = useDebouncedCallback(updateTheme, 100);
+
   const handleColorChange = (key: keyof typeof theme, color: ColorResult) => {
-    updateTheme({ [key]: color.hex });
+    debouncedUpdateTheme({ [key]: color.hex });
   };
 
   return (
