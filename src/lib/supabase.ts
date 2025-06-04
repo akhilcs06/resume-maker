@@ -26,7 +26,7 @@ export interface Database {
                     id: string;
                     user_id: string;
                     title: string;
-                    content: Record<string, any>;
+                    content: Record<string, unknown>;
                     template_id?: string;
                     created_at: string;
                     updated_at: string;
@@ -35,7 +35,7 @@ export interface Database {
                     id?: string;
                     user_id: string;
                     title: string;
-                    content: Record<string, any>;
+                    content: Record<string, unknown>;
                     template_id?: string;
                     created_at?: string;
                     updated_at?: string;
@@ -44,7 +44,7 @@ export interface Database {
                     id?: string;
                     user_id?: string;
                     title?: string;
-                    content?: Record<string, any>;
+                    content?: Record<string, unknown>;
                     template_id?: string;
                     created_at?: string;
                     updated_at?: string;
@@ -54,7 +54,7 @@ export interface Database {
                 Row: {
                     id: string;
                     name: string;
-                    structure: Record<string, any>;
+                    structure: Record<string, unknown>;
                     tags: string[];
                     is_premium: boolean;
                     created_at: string;
@@ -62,7 +62,7 @@ export interface Database {
                 Insert: {
                     id?: string;
                     name: string;
-                    structure: Record<string, any>;
+                    structure: Record<string, unknown>;
                     tags?: string[];
                     is_premium?: boolean;
                     created_at?: string;
@@ -70,7 +70,7 @@ export interface Database {
                 Update: {
                     id?: string;
                     name?: string;
-                    structure?: Record<string, any>;
+                    structure?: Record<string, unknown>;
                     tags?: string[];
                     is_premium?: boolean;
                     created_at?: string;

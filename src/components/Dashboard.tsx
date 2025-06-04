@@ -16,6 +16,44 @@ const defaultTheme = {
   bodyFont: '"Open Sans", sans-serif',
 };
 
+const LOCAL_STORAGE_KEY = 'resumeMakerContent';
+
+const defaultResumeData: ResumeData = {
+  personalInfo: {
+    name: 'Your Name',
+    role: 'YOUR ROLE',
+    profileImage: '',
+    location: 'Location',
+    email: 'Enter your email',
+    phone: 'Enter your phone',
+    website: 'Enter URL',
+    linkedin: 'LinkedIn URL',
+  },
+  summary: 'Enter your professional summary',
+  experience: [
+    {
+      id: '1',
+      company: 'Company',
+      position: 'Position',
+      startDate: 'Start',
+      endDate: 'End',
+      description: 'Enter your work experience description',
+    },
+  ],
+  education: [
+    {
+      id: '1',
+      school: 'School',
+      degree: 'DEGREE',
+      startDate: 'From',
+      endDate: 'Until',
+    },
+  ],
+  skills: ['Enter skill'],
+  languages: ['Language'],
+  hobbies: ['Hobby'],
+};
+
 const DashboardContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -95,43 +133,37 @@ type SectionVisibilityState = {
   custom2: boolean;
 };
 
-const Dashboard: React.FC = () => {  const { email, fullName } = useUserData();
+const Dashboard: React.FC = () => {
+  const { email, fullName } = useUserData();
   const { synced } = useSupabaseUserSync();
-  const api = useApi(); // Now returns a memoized object
+  const api = useApi();
 
-  const [resumeData, setResumeData] = useState<ResumeData>({
-    personalInfo: {
-      name: fullName || 'Your Name',
-      role: 'YOUR ROLE',
-      profileImage: '',
-      location: 'Location',
-      email: email || 'Enter your email',
-      phone: 'Enter your phone',
-      website: 'Enter URL',
-      linkedin: 'LinkedIn URL',
-    },
-    summary: 'Enter your professional summary',
-    experience: [{
-      id: '1',
-      company: 'Company',
-      position: 'Position',
-      startDate: 'Start',
-      endDate: 'End',
-      description: 'Enter your work experience description',
-    }],
-    education: [{
-      id: '1',
-      school: 'School',
-      degree: 'DEGREE',
-      startDate: 'From',
-      endDate: 'Until',
-    }],
-    skills: ['Enter skill'],
-    languages: ['Language'],
-    hobbies: ['Hobby'],
+  const getStoredContent = () => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return raw ? (JSON.parse(raw) as { resumeData?: ResumeData; theme?: typeof defaultTheme }) : null;
+    } catch (err) {
+      console.error('Failed to read local storage', err);
+      return null;
+    }
+  };
+
+  const stored = getStoredContent();
+
+  const [resumeData, setResumeData] = useState<ResumeData>(() => {
+    if (stored?.resumeData) return stored.resumeData;
+    return {
+      ...defaultResumeData,
+      personalInfo: {
+        ...defaultResumeData.personalInfo,
+        name: fullName || defaultResumeData.personalInfo.name,
+        email: email || defaultResumeData.personalInfo.email,
+      },
+    };
   });
 
-  const [theme, setTheme] = useState(defaultTheme);
+  const [theme, setTheme] = useState(() => stored?.theme ? { ...defaultTheme, ...stored.theme } : defaultTheme);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
   const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityState>({
@@ -160,12 +192,12 @@ const Dashboard: React.FC = () => {  const { email, fullName } = useUserData();
         const response = await api.getResumes();
         if (response.success && response.data && response.data.length > 0 && response.data[0].content) {
           const loaded = response.data[0].content;
-          if ('resumeData' in loaded && 'theme' in loaded) {
-            setResumeData(loaded.resumeData);
-            setTheme(loaded.theme);
-          } else {
-            setResumeData(loaded as ResumeData);
-          }
+          const content = 'resumeData' in loaded && 'theme' in loaded
+            ? loaded
+            : { resumeData: loaded as ResumeData, theme: defaultTheme };
+          setResumeData(content.resumeData);
+          setTheme(content.theme);
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(content));
         }
       } catch (err) {
         console.error('Failed to load resume:', err);
@@ -173,6 +205,16 @@ const Dashboard: React.FC = () => {  const { email, fullName } = useUserData();
     };
     loadResume();
   }, [synced, api]);
+
+  // Persist changes locally for faster reloads
+  useEffect(() => {
+    try {
+      const content = { resumeData, theme };
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(content));
+    } catch (err) {
+      console.error('Failed to save to local storage', err);
+    }
+  }, [resumeData, theme]);
 
   // Auto-save resume and theme
   useEffect(() => {
