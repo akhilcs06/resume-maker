@@ -1,5 +1,6 @@
 import { useAuth } from '@clerk/clerk-react';
 import { createClient } from '@supabase/supabase-js';
+import { useMemo } from 'react';
 import { TABLES, type Resume, type ResumeInsert, type ResumeUpdate, type ResumeTemplate } from '../lib/supabase';
 import type { ResumeData, ResumeContent } from '../App';
 
@@ -62,7 +63,7 @@ export const useSupabase = () => {
         }
     };
 
-    return {
+    return useMemo(() => ({
         // Resume operations
         saveResume: async (resumeContent: ResumeContent, title: string): Promise<Resume> => {
             if (!userId) {
@@ -218,7 +219,7 @@ export const useSupabase = () => {
         // Utility functions
         convertFromDbFormat,
         convertToDbFormat,
-    };
+    }), [userId, getToken]);
 };
 
 export default useSupabase;
