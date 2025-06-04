@@ -12,6 +12,13 @@ export const useSupabaseUserSync = () => {
     const [synced, setSynced] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Reset sync status when the user changes or signs out
+    useEffect(() => {
+        if (!isSignedIn) {
+            setSynced(false);
+        }
+    }, [isSignedIn, user?.id]);
+
     useEffect(() => {
         const syncUserProfile = async () => {
             if (!isSignedIn || !user || synced) return;
