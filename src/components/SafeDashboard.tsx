@@ -76,7 +76,8 @@ const SaveStatus = styled.div<{ status: string }>`
       default: return 'transparent';
     }
   }};
-  display: ${props => props.status === 'idle' ? 'none' : 'block'};
+  display: ${props =>
+    props.status === 'saving' || props.status === 'error' ? 'block' : 'none'};
 `;
 
 const SafeDashboard = () => {  const { email, fullName } = useUserData();
@@ -186,7 +187,6 @@ const SafeDashboard = () => {  const { email, fullName } = useUserData();
           <ContentContainer>
             <SaveStatus status={saveStatus}>
               {saveStatus === 'saving' && 'Saving...'}
-              {saveStatus === 'saved' && 'All changes saved.'}
               {saveStatus === 'error' && 'Error saving changes.'}
             </SaveStatus>
             <DashboardContainer>              <PreviewSection>
