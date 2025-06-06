@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { ThemeProvider } from 'styled-components';
 import ResumePreview from './ResumePreview';
+import ClassicResumeLayout from './ClassicResumeLayout.jsx';
 import ThemeControls from './ThemeControls';
 import type { ResumeData } from '../App';
 import useUserData from '../hooks/useUserData';
@@ -142,7 +143,7 @@ const Dashboard: React.FC = () => {
     if (typeof window === 'undefined') return null;
     try {
       const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-      return raw ? (JSON.parse(raw) as { resumeData?: ResumeData; theme?: typeof defaultTheme }) : null;
+      return raw ? (JSON.parse(raw) as { resumeData?: ResumeData; theme?: typeof defaultTheme; layoutType?: 'modern' | 'classic' }) : null;
     } catch (err) {
       console.error('Failed to read local storage', err);
       return null;
@@ -166,7 +167,7 @@ const Dashboard: React.FC = () => {
   const [theme, setTheme] = useState(() => stored?.theme ? { ...defaultTheme, ...stored.theme } : defaultTheme);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityState>({
+const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityState>({
     picture: true,
     location: true,
     phone: true,
@@ -181,7 +182,15 @@ const Dashboard: React.FC = () => {
     hobbies: true,
     linkedin: true,
     custom1: false,
-    custom2: false,
+  custom2: false,
+});
+
+  const [layoutType, setLayoutType] = useState<'modern' | 'classic'>(() => {
+    if (stored && 'layoutType' in stored && (stored as any).layoutType) {
+      const lt = (stored as any).layoutType;
+      if (lt === 'classic' || lt === 'modern') return lt;
+    }
+    return 'modern';
   });
 
   // Load resume and theme from Supabase on mount
@@ -197,6 +206,10 @@ const Dashboard: React.FC = () => {
             : { resumeData: loaded as ResumeData, theme: defaultTheme };
           setResumeData(content.resumeData);
           setTheme(content.theme);
+          if ('layoutType' in content && (content as any).layoutType) {
+            const lt = (content as any).layoutType;
+            if (lt === 'classic' || lt === 'modern') setLayoutType(lt);
+          }
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(content));
         }
       } catch (err) {
@@ -209,12 +222,12 @@ const Dashboard: React.FC = () => {
   // Persist changes locally for faster reloads
   useEffect(() => {
     try {
-      const content = { resumeData, theme };
+      const content = { resumeData, theme, layoutType };
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(content));
     } catch (err) {
       console.error('Failed to save to local storage', err);
     }
-  }, [resumeData, theme]);
+  }, [resumeData, theme, layoutType]);
 
   // Auto-save resume and theme
   useEffect(() => {
@@ -224,7 +237,7 @@ const Dashboard: React.FC = () => {
       if (!synced) return;
       setSaveStatus('saving');
       try {
-        const content = { resumeData, theme };
+        const content = { resumeData, theme, layoutType };
         await api.saveResume(content, `Resume - ${new Date().toLocaleDateString()}`);
         setSaveStatus('saved');
         timeoutId = setTimeout(() => setSaveStatus('idle'), 2000);
@@ -237,7 +250,7 @@ const Dashboard: React.FC = () => {
 
     timeoutId = setTimeout(autoSave, 2000);
     return () => clearTimeout(timeoutId);
-  }, [resumeData, theme, api, synced]);
+  }, [resumeData, theme, layoutType, api, synced]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -252,13 +265,22 @@ const Dashboard: React.FC = () => {
           updateTheme={newTheme => setTheme(prev => ({ ...prev, ...newTheme }))}
           sectionVisibility={sectionVisibility}
           setSectionVisibility={setSectionVisibility}
+          layoutType={layoutType}
+          setLayoutType={setLayoutType}
         />
         <PreviewSection>
-          <ResumePreview
-            resumeData={resumeData}
-            setResumeData={setResumeData}
-            sectionVisibility={sectionVisibility}
-          />
+          {layoutType === 'modern' ? (
+            <ResumePreview
+              resumeData={resumeData}
+              setResumeData={setResumeData}
+              sectionVisibility={sectionVisibility}
+            />
+          ) : (
+            <ClassicResumeLayout
+              resumeData={resumeData}
+              sectionVisibility={sectionVisibility}
+            />
+          )}
         </PreviewSection>
       </DashboardContainer>
     </ThemeProvider>
