@@ -3,6 +3,7 @@ import type { ResumeData } from '../App';
 
 export interface ClassicResumeLayoutProps {
   resumeData: ResumeData;
+  setResumeData: React.Dispatch<React.SetStateAction<ResumeData>>;
   sectionVisibility: {
     picture: boolean;
     location: boolean;

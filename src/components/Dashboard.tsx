@@ -278,6 +278,7 @@ const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityStat
           ) : (
             <ClassicResumeLayout
               resumeData={resumeData}
+              setResumeData={setResumeData}
               sectionVisibility={sectionVisibility}
             />
           )}
