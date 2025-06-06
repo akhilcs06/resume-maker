@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { ThemeProvider } from 'styled-components';
 import ResumePreview from './ResumePreview';
-import ClassicResumeLayout from './ClassicResumeLayout.jsx';
+import ClassicResumeLayout from './ClassicResumeLayout';
 import ThemeControls from './ThemeControls';
 import type { ResumeData } from '../App';
 import useUserData from '../hooks/useUserData';
