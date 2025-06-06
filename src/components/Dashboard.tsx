@@ -111,7 +111,7 @@ const SaveStatus = styled.div<{ status: 'idle' | 'saving' | 'saved' | 'error' }>
     }
   }};
   display: ${props =>
-    props.status === 'saving' || props.status === 'error' ? 'block' : 'none'};
+    props.status === 'saving' || props.status === 'error' || props.status === 'saved' ? 'block' : 'none'};
   text-align: center;
   margin: 10px auto;
   max-width: 200px;
@@ -187,8 +187,8 @@ const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityStat
 });
 
   const [layoutType, setLayoutType] = useState<'modern' | 'classic'>(() => {
-    if (stored && 'layoutType' in stored && (stored as any).layoutType) {
-      const lt = (stored as any).layoutType;
+    if (stored && typeof stored === 'object' && 'layoutType' in stored) {
+      const lt = (stored as { layoutType?: string }).layoutType;
       if (lt === 'classic' || lt === 'modern') return lt;
     }
     return 'modern';
@@ -202,13 +202,16 @@ const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityStat
         const response = await api.getResumes();
         if (response.success && response.data && response.data.length > 0 && response.data[0].content) {
           const loaded = response.data[0].content;
-          const content = 'resumeData' in loaded && 'theme' in loaded
-            ? loaded
-            : { resumeData: loaded as ResumeData, theme: defaultTheme };
+          let content: { resumeData: ResumeData; theme: typeof defaultTheme; layoutType?: 'modern' | 'classic' };
+          if (typeof loaded === 'object' && loaded !== null && 'resumeData' in loaded && 'theme' in loaded) {
+            content = loaded as { resumeData: ResumeData; theme: typeof defaultTheme; layoutType?: 'modern' | 'classic' };
+          } else {
+            content = { resumeData: loaded as unknown as ResumeData, theme: defaultTheme };
+          }
           setResumeData(content.resumeData);
           setTheme(content.theme);
-          if ('layoutType' in content && (content as any).layoutType) {
-            const lt = (content as any).layoutType;
+          if ('layoutType' in content && content.layoutType) {
+            const lt = content.layoutType;
             if (lt === 'classic' || lt === 'modern') setLayoutType(lt);
           }
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(content));
@@ -256,10 +259,11 @@ const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityStat
   return (
     <ThemeProvider theme={theme}>
       <DashboardContainer>
-        <SaveStatus status={saveStatus}>
-          {saveStatus === 'saving' && 'Saving...'}
-          {saveStatus === 'error' && 'Error saving changes'}
-        </SaveStatus>
+        {(saveStatus === 'error') && (
+          <SaveStatus status={saveStatus}>
+            {saveStatus === 'error' ? 'Error saving changes' : ''}
+          </SaveStatus>
+        )}
         <ThemeControls
           theme={theme}
           updateTheme={newTheme => setTheme(prev => ({ ...prev, ...newTheme }))}

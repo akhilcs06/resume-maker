@@ -143,10 +143,10 @@ const SafeDashboard = () => {  const { email, fullName } = useUserData();
       try {
         const response = await api.getResumes();
         if (response.success && response.data && response.data.length > 0 && response.data[0].content) {
-          const loaded = response.data[0].content as ResumeContent | ResumeData;
-          if ('resumeData' in loaded && 'theme' in loaded) {
-            setResumeData(loaded.resumeData);
-            setTheme(loaded.theme);
+          const loaded = response.data[0].content as unknown;
+          if (typeof loaded === 'object' && loaded !== null && 'resumeData' in loaded && 'theme' in loaded) {
+            setResumeData((loaded as ResumeContent).resumeData);
+            setTheme((loaded as ResumeContent).theme);
           } else {
             setResumeData(loaded as ResumeData);
             setTheme(defaultTheme);
@@ -186,7 +186,6 @@ const SafeDashboard = () => {  const { email, fullName } = useUserData();
         <PageContainer style={{ marginTop: 0 }}>
           <ContentContainer>
             <SaveStatus status={saveStatus}>
-              {saveStatus === 'saving' && 'Saving...'}
               {saveStatus === 'error' && 'Error saving changes.'}
             </SaveStatus>
             <DashboardContainer>              <PreviewSection>
@@ -201,6 +200,8 @@ const SafeDashboard = () => {  const { email, fullName } = useUserData();
                 updateTheme={newTheme => setTheme(prev => ({ ...prev, ...newTheme }))}
                 sectionVisibility={sectionVisibility}
                 setSectionVisibility={setSectionVisibility}
+                layoutType={"modern"}
+                setLayoutType={() => {}}
               />
             </DashboardContainer>
           </ContentContainer>
