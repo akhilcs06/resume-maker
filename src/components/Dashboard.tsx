@@ -110,7 +110,8 @@ const SaveStatus = styled.div<{ status: 'idle' | 'saving' | 'saved' | 'error' }>
       default: return 'transparent';
     }
   }};
-  display: ${props => props.status === 'idle' ? 'none' : 'block'};
+  display: ${props =>
+    props.status === 'saving' || props.status === 'error' ? 'block' : 'none'};
   text-align: center;
   margin: 10px auto;
   max-width: 200px;
@@ -257,7 +258,6 @@ const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityStat
       <DashboardContainer>
         <SaveStatus status={saveStatus}>
           {saveStatus === 'saving' && 'Saving...'}
-          {saveStatus === 'saved' && 'All changes saved'}
           {saveStatus === 'error' && 'Error saving changes'}
         </SaveStatus>
         <ThemeControls
