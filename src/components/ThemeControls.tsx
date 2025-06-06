@@ -34,6 +34,8 @@ interface ThemeControlsProps {
   updateTheme: (newTheme: Partial<ThemeControlsProps['theme']>) => void;
   sectionVisibility: SectionVisibilityState;
   setSectionVisibility: React.Dispatch<React.SetStateAction<SectionVisibilityState>>;
+  layoutType: 'modern' | 'classic';
+  setLayoutType: React.Dispatch<React.SetStateAction<'modern' | 'classic'>>;
 }
 
 interface SidebarContainerProps {
@@ -189,7 +191,9 @@ const ThemeControls: React.FC<ThemeControlsProps> = ({
   theme,
   updateTheme,
   sectionVisibility,
-  setSectionVisibility
+  setSectionVisibility,
+  layoutType,
+  setLayoutType
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showPrimaryPicker, setShowPrimaryPicker] = useState(false);
@@ -257,6 +261,17 @@ const ThemeControls: React.FC<ThemeControlsProps> = ({
               />
             </ColorPickerWrapper>
           )}
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarLabel>Layout</SidebarLabel>
+          <select
+            value={layoutType}
+            onChange={e => setLayoutType(e.target.value as 'modern' | 'classic')}
+            style={{ width: '100%', padding: '6px' }}
+          >
+            <option value="modern">Modern</option>
+            <option value="classic">Classic</option>
+          </select>
         </SidebarGroup>
         <SectionToggleContainer>
           {Object.entries(sectionVisibility).map(([key, value]) => (
